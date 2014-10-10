@@ -28,9 +28,9 @@ import std_msgs.msg as std_msgs
 class RobosemBridge():
     def __init__(self, name = "ROCONBRIDGE", host = '192.168.10.111', port = '6001'):
         #robosem
-        self.NAME = "ROCONBRIDGE" 
-        self.HOST = "192.168.10.111" 
-        self.PORT = 6001
+        self.NAME = name
+        self.HOST = host
+        self.PORT = int(port)
         self.TIME_OUT_SOCKET = 5 
         self.DISCRIMINATOR = 2503011588
         self.VERSION = 0x00020003
@@ -50,17 +50,18 @@ class RobosemBridge():
     def connect(self):
         socket.setdefaulttimeout(self.TIME_OUT_SOCKET)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-               
-        try:
-            self.s.connect((self.HOST, self.PORT))
-        except socket.timeout, e:
-            rospy.logwarn('failed socket timeout. Reason: %s' % str(e))
-            self.is_connecting = False
-        except Exception, e:
-            rospy.logwarn('failed. Reason:%s' % str(e))
-            self.is_connecting = False
-        else:
-            self.is_connecting = True
+        while not rospy.is_shutdown() and not self.is_connecting:
+            try:
+                rospy.loginfo('try to connect robosem')
+                self.s.connect((self.HOST, self.PORT))
+            except socket.timeout, e:
+                rospy.logwarn('failed socket timeout. Reason: %s' % str(e))
+                self.is_connecting = False
+            except Exception, e:
+                rospy.logwarn('failed. Reason:%s' % str(e))
+                self.is_connecting = False
+            else:
+                self.is_connecting = True
     
     def init_ros(self):
         self.publishers['TouchSensorEvent'] = rospy.Publisher('touch_sensor_event', std_msgs.String, latch=False, queue_size=1)
@@ -152,7 +153,7 @@ class RobosemBridge():
         cmdset.setInt('SpeechType',speech_type)
         self.s.send(cmdset.getCmdSet())
 
-
+    #Sample Function
     # def PlayTTS(self, IsRunning, Return,  Text, SpeechType, SyncFlag = False):
     #     #Todo
     #     ResultCode = 'failure'
@@ -205,28 +206,23 @@ def main():
     print "============================Main start============================"
     
     rospy.init_node('robosem_bridge')
-    rb = RobosemBridge()
+
+    robosem_bridge_name = ""
+    robosem_ip = ""
+    robosem_port = ""
+
+    if rospy.has_param('~robosem_bridge_name'):
+            robosem_bridge_name = rospy.get_param('~robosem_bridge_name', "ROCONBRIDGE")
+    if rospy.has_param('~robosem_ip'):
+            robosem_ip = rospy.get_param('~robosem_ip', "192.168.10.111")
+    if rospy.has_param('~robosem_port'):
+            robosem_port = rospy.get_param('~robosem_port', 6001)
+    rospy.loginfo("robosem connect info: [name: %s][host: %s][port: %s]" % (robosem_bridge_name, robosem_ip, str(robosem_port)))
+
+    rb = RobosemBridge(robosem_bridge_name, robosem_ip, robosem_port)
     rb.recv()
     
-    #m_IsRunning = [False]
-    #Ret = {}
-    #PlayTTS(m_IsRunning,Ret, u'\xeb\xb0\x94\xeb\xb3\xb4',1, False)
-    #PlayTTS(m_IsRunning,Ret, "바보",1, False)
-    
-    """
-    a = "바보"
-    print a
-    a = u"\xeb\xb0\x94\xeb\xb3\xb4"
-    
-    print codecs.encode(a,"utf_8");
-    print a.encode('utf-8')
-    """
-
-    #Connect()
-    #rospy.init_node('robosem_bridge')
-    #Recv()
-
-    print "======================Main end================================="
+    print "============================Main end==============================="
 
 if __name__ == '__main__':
     main()
