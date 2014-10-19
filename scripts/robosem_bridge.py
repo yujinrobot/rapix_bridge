@@ -57,9 +57,11 @@ class RobosemBridge():
             except socket.timeout, e:
                 rospy.logwarn('failed socket timeout. Reason: %s' % str(e))
                 self.is_connecting = False
+                rospy.sleep(5)
             except Exception, e:
                 rospy.logwarn('failed. Reason:%s' % str(e))
                 self.is_connecting = False
+                rospy.sleep(5)
             else:
                 self.is_connecting = True
     
@@ -88,6 +90,7 @@ class RobosemBridge():
                 buffer = struct.unpack('I I I',data)
             except Exception:
                 print "Exception!!!!!!!!!!!!!!!!!!!!!buffer = struct.unpack('I I I',data)"
+                rospy.sleep(5)
                 continue
 
             disc = buffer[0]
@@ -111,6 +114,7 @@ class RobosemBridge():
                 buffer = struct.unpack('%ds'%data_length,data)
             except Exception:
                 print "Exception!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!buffer = struct.unpack()"
+                rospy.sleep(5)
                 continue
             
             data = buffer[0]
@@ -151,6 +155,14 @@ class RobosemBridge():
         cmdset.setString('Text',text)
         
         cmdset.setInt('SpeechType',speech_type)
+        self.s.send(cmdset.getCmdSet())
+
+    def robot_motion(self, data):
+        print "Motion: %s" % data.data
+        motion = data.data
+        self.cmd_id = self.cmd_id + 1
+        cmdset = CCmdSet("RobotMotion","REQUEST_MESSAGE",self.NAME,"RBCODE",0,"",0,0,"",self.cmd_id)
+        cmdset.setString('MotionName',motion)
         self.s.send(cmdset.getCmdSet())
 
     #Sample Function
