@@ -18,7 +18,7 @@ sys.setdefaultencoding('UTF8')
 import socket
 import threading
 import struct
-from cmdset import CCmdSet
+from robosem_bridge import CCmdSet
 
 #ros
 ##############################################################################

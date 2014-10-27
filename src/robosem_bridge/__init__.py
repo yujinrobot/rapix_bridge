@@ -4,3 +4,5 @@
 #   https://github.com/yujinrobot/robosem_bridge
 #
 #################################################################################
+
+from .cmdset import *
