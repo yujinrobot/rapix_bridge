@@ -16,6 +16,7 @@ sys.setdefaultencoding('UTF8')
 # robosem
 ##############################################################################
 import socket
+import errno
 import threading
 import struct
 from robosem_bridge import CCmdSet
@@ -28,7 +29,7 @@ import std_msgs.msg as std_msgs
 
 class RobosemBridge():
 
-    def __init__(self, name="ROCONBRIDGE", host='192.168.10.111', port='6001'):
+    def __init__(self, name="ROCONBRIDGE", host='192.168.10.28', port=6001):
         # robosem
         self.NAME = name
         self.HOST = host
@@ -47,27 +48,37 @@ class RobosemBridge():
         self.publishers = {}
         self.subscribers = {}
 
-        self.connect()
-        self.init_robosem()
         self.init_ros()
+
+    def spin(self):
+
+        while not rospy.is_shutdown():
+            self.connect()
+            self.init_robosem()
+            self.recv()
+            self.disconnet()
+            rospy.sleep(0.1)
 
     def connect(self):
         socket.setdefaulttimeout(self.TIME_OUT_SOCKET)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         while not rospy.is_shutdown() and not self.is_connecting:
             try:
-                self.loginfo('try to connect robosem')
+                self.loginfo('try to connect robosem, Please turn on Robosem')
                 self.s.connect((self.HOST, self.PORT))
-            except socket.timeout, e:
-                self.logwarn('failed socket timeout. Reason: %s' % str(e))
-                self.is_connecting = False
-                rospy.sleep(5)
             except Exception, e:
-                self.logwarn('failed. Reason:%s' % str(e))
                 self.is_connecting = False
                 rospy.sleep(5)
             else:
                 self.is_connecting = True
+
+    def disconnet(self):
+        try:
+            self.s.close()
+        except Exception, e:
+            self.logwarn('disconnet failed. Reason:%s' % str(e))
+        else:
+            self.is_connecting = False
 
     def init_ros(self):
         self.publishers['TouchSensorEvent'] = rospy.Publisher(
@@ -85,12 +96,29 @@ class RobosemBridge():
             self.s.send(cmdset.getCmdSet())
 
     def recv(self):
-        self.loginfo('Start Recv Thread')
+        self.loginfo('Start Robosem')
         while not rospy.is_shutdown() and self.is_connecting:
             try:
                 data = self.s.recv(12)
                 if len(data) != 12:
                     data += self.s.recv(12 - len(data))
+
+            except socket.timeout, e:
+                if not self.is_connecting:
+                    self.logwarn(
+                        'Exception error in receive header data. Reason:%s' % str(e))
+                continue
+
+            except socket.error, e:
+                if e.errno == errno.ECONNRESET:
+                    self.logwarn(
+                        'Exception error in receive header data. Reason:%s' % str(e))
+                    break
+                else:
+                    self.logwarn(
+                        'Exception error in receive header data. Reason:%s' % str(e))
+                    continue
+
             except Exception, e:
                 self.logwarn(
                     'Exception error in receive header data. Reason:%s' % str(e))
@@ -101,8 +129,7 @@ class RobosemBridge():
             except Exception, e:
                 self.loginfo(
                     'Exception error in header unpack. Reason:%s' % str(e))
-                rospy.sleep(5)
-                continue
+                break
 
             disc = buffer[0]
             ver = buffer[1]
@@ -251,6 +278,6 @@ def main():
         robosem_port = rospy.get_param('~robosem_port', 6001)
 
     rb = RobosemBridge(robosem_bridge_name, robosem_ip, robosem_port)
-    rb.recv()
+    rb.spin()
 if __name__ == '__main__':
     main()
