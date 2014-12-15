@@ -192,6 +192,8 @@ class RobosemBridge():
         rospy.logwarn('Robosem Bridge : ' + str(msg))
 
     def play_tts(self, data):
+        if not self.is_connecting:
+            return
         print "TTS: %s" % data.data
         text = data.data
         speech_type = 1
@@ -205,6 +207,8 @@ class RobosemBridge():
         self.s.send(cmdset.getCmdSet())
 
     def robot_motion(self, data):
+        if not self.is_connecting:
+            return
         print "Motion: %s" % data.data
         motion = data.data
         self.cmd_id = self.cmd_id + 1
