@@ -127,7 +127,7 @@ class RobosemBridge():
             try:
                 buffer = struct.unpack('I I I', data)
             except Exception, e:
-                self.loginfo(
+                self.logwarn(
                     'Exception error in header unpack. Reason:%s' % str(e))
                 break
 
@@ -179,7 +179,10 @@ class RobosemBridge():
                     status = param['value']
 
             if (button_id is 4 or button_id is 3) and status is 1:
-                button_id = std_msgs.String(str(button_id))
+                if button_id is 4:
+                    button_id = std_msgs.String('right')
+                elif button_id is 3:
+                    button_id = std_msgs.String('left')
                 self.publishers['TouchSensorEvent'].publish(button_id)
 
     def res_proc(self, cmdset):
