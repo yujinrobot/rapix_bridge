@@ -89,6 +89,8 @@ class RobosemBridge():
             'robot_motion', std_msgs.String, self.robot_motion)
         self.subscribers['ReqExpressFace'] = rospy.Subscriber(
             'face_expression', std_msgs.UInt32, self.face_expression)
+        self.subscribers['EasyMoveArm'] = rospy.Subscriber(
+            'easy_move_arm', std_msgs.Int32, self.easy_move_arm)
 
     def init_robosem(self):
         if self.is_connecting:
@@ -226,6 +228,16 @@ class RobosemBridge():
         cmdset = CCmdSet("ReqExpressFace", "REQUEST_MESSAGE",
                          self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
         cmdset.setUInt('FaceType', args.data)
+        self.s.send(cmdset.getCmdSet())
+
+    def easy_move_arm(self, args):
+        if not self.is_connecting:
+            return
+        print "EasyMoveArm: %d" % args.data
+        self.cmd_id = self.cmd_id + 1
+        cmdset = CCmdSet("EasyMoveArm", "REQUEST_MESSAGE",
+                         self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
+        cmdset.setUInt('TestCode', args.data)
         self.s.send(cmdset.getCmdSet())
 
     # Sample Function
