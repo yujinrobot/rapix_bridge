@@ -82,11 +82,13 @@ class RobosemBridge():
 
     def init_ros(self):
         self.publishers['TouchSensorEvent'] = rospy.Publisher(
-            'touch_sensor_event', std_msgs.String, latch=False, queue_size=1)
+            'touch_sensor_event', std_msgs.UInt32, latch=False, queue_size=1)
         self.subscribers['PlayTTS'] = rospy.Subscriber(
             'play_tts', std_msgs.String, self.play_tts)
         self.subscribers['RobotMotion'] = rospy.Subscriber(
             'robot_motion', std_msgs.String, self.robot_motion)
+        self.subscribers['ReqExpressFace'] = rospy.Subscriber(
+            'face_expression', std_msgs.UInt32, self.face_expression)
 
     def init_robosem(self):
         if self.is_connecting:
@@ -178,11 +180,7 @@ class RobosemBridge():
                 if param['name'] == 'Status':
                     status = param['value']
 
-            if (button_id is 4 or button_id is 3) and status is 1:
-                if button_id is 4:
-                    button_id = std_msgs.String('right')
-                elif button_id is 3:
-                    button_id = std_msgs.String('left')
+            if status is 1:
                 self.publishers['TouchSensorEvent'].publish(button_id)
 
     def res_proc(self, cmdset):
@@ -218,6 +216,16 @@ class RobosemBridge():
         cmdset = CCmdSet("RobotMotion", "REQUEST_MESSAGE",
                          self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
         cmdset.setString('MotionName', motion)
+        self.s.send(cmdset.getCmdSet())
+
+    def face_expression(self, args):
+        if not self.is_connecting:
+            return
+        print "FaceExpression: %d" % args.data
+        self.cmd_id = self.cmd_id + 1
+        cmdset = CCmdSet("ReqExpressFace", "REQUEST_MESSAGE",
+                         self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
+        cmdset.setUInt('FaceType', args.data)
         self.s.send(cmdset.getCmdSet())
 
     # Sample Function
