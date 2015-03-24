@@ -4,9 +4,9 @@ subscribers:
   - name: robot_motion
     type: std_msgs/String
   - name: face_expression
-    type: std_msgs/String
+    type: std_msgs/UInt32
   - name: easy_move_arm
-    type: std_msgs/String
+    type: std_msgs/UInt32
 publishers: 
   - name: touch_sensor_event
     type: std_msgs/String
