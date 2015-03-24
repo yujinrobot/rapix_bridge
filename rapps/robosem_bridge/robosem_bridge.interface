@@ -1,3 +1,4 @@
+subscribers:
   - name: play_tts
     type: std_msgs/String
   - name: robot_motion
