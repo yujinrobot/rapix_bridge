@@ -92,7 +92,7 @@ class RobosemBridge():
         self.subscribers['EasyMoveArm'] = rospy.Subscriber(
             'easy_move_arm', std_msgs.Int32, self.easy_move_arm)
         self.subscribers['EasyMoveHead'] = rospy.Subscriber(
-            'easy_move_head', std_msgs.Int32, self.easy_move_arm)
+            'easy_move_head', std_msgs.Int32, self.easy_move_head)
 
     def init_robosem(self):
         if self.is_connecting:
