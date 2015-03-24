@@ -1,4 +1,3 @@
-subscribers:
   - name: play_tts
     type: std_msgs/String
   - name: robot_motion
@@ -6,6 +5,8 @@ subscribers:
   - name: face_expression
     type: std_msgs/UInt32
   - name: easy_move_arm
+    type: std_msgs/UInt32
+  - name: easy_move_head
     type: std_msgs/UInt32
 publishers: 
   - name: touch_sensor_event
