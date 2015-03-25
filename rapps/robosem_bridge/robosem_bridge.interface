@@ -6,12 +6,12 @@ subscribers:
   - name: face_expression
     type: std_msgs/UInt32
   - name: easy_move_arm
-    type: std_msgs/UInt32
+    type: std_msgs/Int32
   - name: easy_move_head
     type: std_msgs/UInt32
 publishers: 
   - name: touch_sensor_event
-    type: std_msgs/String
+    type: std_msgs/UInt32
 services: []
 action_clients: []
 action_servers: []
