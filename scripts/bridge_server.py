@@ -82,7 +82,7 @@ class RobosemBridge():
 
     def init_ros(self):
         self.publishers['TouchSensorEvent'] = rospy.Publisher(
-            'touch_sensor_event', std_msgs.UInt32, latch=False, queue_size=1)
+            'touch_sensor_event', std_msgs.String, latch=False, queue_size=1)
         self.subscribers['PlayTTS'] = rospy.Subscriber(
             'play_tts', std_msgs.String, self.play_tts)
         self.subscribers['RobotMotion'] = rospy.Subscriber(
