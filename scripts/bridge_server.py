@@ -185,7 +185,7 @@ class RobosemBridge():
                     status = param['value']
 
             if status is 1:
-                self.publishers['TouchSensorEvent'].publish(button_id)
+                self.publishers['TouchSensorEvent'].publish(str(button_id))
 
     def res_proc(self, cmdset):
         pass
