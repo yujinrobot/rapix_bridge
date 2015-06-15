@@ -180,9 +180,9 @@ class RobosemBridge():
 
             if (button_id is 4 or button_id is 3) and status is 1:
                 if button_id is 4:
-                    button_id = std_msgs.String('right')
+                    button_id = std_msgs.String('RIGHT_HAND')
                 elif button_id is 3:
-                    button_id = std_msgs.String('left')
+                    button_id = std_msgs.String('LEFT_HAND')
                 self.publishers['TouchSensorEvent'].publish(button_id)
 
     def res_proc(self, cmdset):

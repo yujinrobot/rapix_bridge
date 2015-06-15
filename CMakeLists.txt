@@ -9,7 +9,7 @@ project(robosem_bridge)
 # Catkin
 ##############################################################################
 find_package(catkin REQUIRED COMPONENTS
-    roslint)
+    roslint message_generation std_msgs)
 
 catkin_package()
 catkin_python_setup()
@@ -18,12 +18,26 @@ file(GLOB_RECURSE ${PROJECT_NAME}_MODULE_SOURCES RELATIVE ${PROJECT_SOURCE_DIR} 
 file(GLOB_RECURSE ${PROJECT_NAME}_SCRIPT_SOURCES RELATIVE ${PROJECT_SOURCE_DIR} scripts/*)
 roslint_python(${${PROJECT_NAME}_MODULE_SOURCES} ${${PROJECT_NAME}_SCRIPT_SOURCES})
 
+## Generate msgs in the 'msg' folder
+add_message_files(
+  DIRECTORY msg
+  FILES
+  PlayTts.msg
+  RobotMotion.msg
+  TouchSensorEvent.msg
+  )
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs 
+)
+
+
 ##############################################################################
 # Installs
 ##############################################################################
 install(
     PROGRAMS 
-        scripts/robosem_bridge.py
-        scripts/robosem_manager.py
+        scripts/bridge_server.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
     )
