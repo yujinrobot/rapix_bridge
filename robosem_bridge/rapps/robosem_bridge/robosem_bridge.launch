@@ -1,6 +1,6 @@
 <launch>
 	<arg name="robot_ip"    default="localhost"/> <!-- IP of the ROBOSEM Bridge -->
-	<include file="$(find rapix_bridge)/launch/bridge_server.launch">
+	<include file="$(find robosem_bridge)/launch/bridge_server.launch">
 		<arg name="robot_ip"   value="$(arg robot_ip)"/>
 	</include>
 </launch>

@@ -1,6 +1,4 @@
 display: Rapix Bridge
 description: control rapix based robots 
-compatibility: rocon:/pc
-launch: rapix_bridge.launch
 public_interface: rapix_bridge.interface
 public_parameters: rapix_bridge.parameters
