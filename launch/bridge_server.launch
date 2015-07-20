@@ -1,13 +1,13 @@
 <launch>
   <!-- mandatory parameters -->
-  <arg name="robosem_bridge_name"             default="ROCONBRIDGE"/> <!-- Name of ROCON Application -->
-  <arg name="robosem_ip"                        default="192.168.10.28"/> <!-- IP of Robosem -->
-  <arg name="robosem_port"                     default="6001"/> <!-- Prt of Robosem, It must not been chaged. -->
+  <arg name="rapix_application_name"              default="ROCONBRIDGE"/> <!-- Name of ROCON Application -->
+  <arg name="robot_ip"                            default="$(optenv RAPI_ROBOT_IP   localhost)"/> <!-- IP of Robosem -->
+  <arg name="robot_port"                          default="$(optenv RAPI_ROBOT_PORT 6001"/> <!-- Prt of Robosem. Default 6001 -->
 
   <node pkg="robosem_bridge" type="bridge_server.py" name="robosem_bridge_server">
     <!-- parameters -->
-    <param name="robosem_bridge_name"             value="$(arg robosem_bridge_name)"/>
-    <param name="robosem_ip"                        value="$(arg robosem_ip)"/>
-    <param name="robosem_port"                      value="$(arg robosem_port)"/>
+    <param name="rapix_application_name"              value="$(arg rapix_application_name)"/>
+    <param name="robot_ip"                            value="$(arg robot_ip)"/>
+    <param name="robot_port"                          value="$(arg robot_port)"/>
   </node>
 </launch>

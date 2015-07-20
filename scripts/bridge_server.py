@@ -29,20 +29,19 @@ import std_msgs.msg as std_msgs
 
 class RobosemBridge():
 
-    def __init__(self, name="ROCONBRIDGE", host='192.168.10.28', port=6001):
+    def __init__(self, name="ROCONBRIDGE", host='localhost', port=6001):
         # robosem
         self.NAME = name
         self.HOST = host
         self.PORT = int(port)
         self.TIME_OUT_SOCKET = 5
-        self.DISCRIMINATOR = 2503011588
+        self.DISCRIMINATOR = 2503011588 # Defines start of rapix msg
         self.VERSION = 0x00020003
         self.is_connecting = False
         self.cmd_id = 0
         self.res_cmdset_list = []
         self.evt_cmdset_list = []
-        self.loginfo("robosem connect info: [name: %s][host: %s][port: %s]" % (
-            name, host, str(port)))
+        self.loginfo("robosem connect info: [name: %s][host: %s][port: %s]" % (name, host, str(port)))
 
         # ros
         self.publishers = {}
@@ -276,13 +275,12 @@ def main():
     robosem_ip = ""
     robosem_port = ""
 
-    if rospy.has_param('~robosem_bridge_name'):
-        robosem_bridge_name = rospy.get_param(
-            '~robosem_bridge_name', "ROCONBRIDGE")
-    if rospy.has_param('~robosem_ip'):
-        robosem_ip = rospy.get_param('~robosem_ip', "192.168.10.111")
-    if rospy.has_param('~robosem_port'):
-        robosem_port = rospy.get_param('~robosem_port', 6001)
+    if rospy.has_param('~rapix_application_name'):
+        robosem_bridge_name = rospy.get_param('~rapix_application_name', "ROCONBRIDGE")
+    if rospy.has_param('~robot_ip'):
+        robosem_ip = rospy.get_param('~robot_ip', "localhost")
+    if rospy.has_param('~robot_port'):
+        robosem_port = rospy.get_param('~robot_port', 6001)
 
     rb = RobosemBridge(robosem_bridge_name, robosem_ip, robosem_port)
     rb.spin()
