@@ -1,0 +1,5 @@
+display: Robosem Bridge
+description: control robosem 
+compatibility: rocon:/pc
+launch: robosem_bridge.launch
+parent_name: rapix_bridge/rapix_bridge

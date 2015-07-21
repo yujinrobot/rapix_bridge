@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>irobi_bridge</name>
+  <version>0.0.0</version>
+  <description>
+    Bridging between ROS and irobi
+  </description>
+
+  <maintainer email="dwlee@yujinrobot.com">Dongwook Lee</maintainer>
+  <license>BSD</license>
+
+  <!-- <url type="website">http://wiki.ros.org/irobi_bridge</url> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rapix_bridge</build_depend>
+  <run_depend>rapix_bridge</run_depend>
+
+  <export>
+    <rocon_app>rapps/irobi_bridge/irobi_bridge.rapp</rocon_app>
+  </export>
+</package>

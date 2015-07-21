@@ -1,0 +1,5 @@
+display: iRobi Bridge
+description: control irobi
+compatibility: rocon:/pc
+launch: irobi_bridge.launch
+parent_name: rapix_bridge/rapix_bridge

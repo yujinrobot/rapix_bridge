@@ -1,0 +1,11 @@
+<launch>
+  <!-- mandatory parameters -->
+  <arg name="robot_ip"                            default="$(optenv IROBI_IP   localhost)"/> <!-- IP of Robosem -->
+  <arg name="robot_port"                          default="$(optenv IROBI_PORT 6001)"/> <!-- Prt of Robosem. Default 6001 -->
+
+  <node pkg="irobi_bridge" type="bridge_server.py" name="irobi_bridge">
+    <!-- parameters -->
+    <param name="robot_ip"                            value="$(arg robot_ip)"/>
+    <param name="robot_port"                          value="$(arg robot_port)"/>
+  </node>
+</launch>

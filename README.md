@@ -1,4 +1,4 @@
-robosem_bridge
+rapix_bridge
 ==============
 
-exposes ROS api to utilise robosem.
+exposes ROS api to utilise rapix based robots.

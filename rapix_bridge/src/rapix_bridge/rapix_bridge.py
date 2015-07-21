@@ -19,42 +19,41 @@ import socket
 import errno
 import threading
 import struct
-from robosem_bridge import CCmdSet
+from .cmdset import CCmdSet
+import abc
 
 # ros
 ##############################################################################
 import rospy
 import std_msgs.msg as std_msgs
 
+class RAPIXBridge():
 
-class RobosemBridge():
+    __meta_class = abc.ABCMeta
 
-    def __init__(self, name="ROCONBRIDGE", host='192.168.10.28', port=6001):
+    def __init__(self, name="ROCONBRIDGE", host='localhost', port=6001):
         # robosem
         self.NAME = name
-        self.HOST = host
+        self.HOST = host 
         self.PORT = int(port)
         self.TIME_OUT_SOCKET = 5
-        self.DISCRIMINATOR = 2503011588
+        self.DISCRIMINATOR = 2503011588 # Defines start of rapix msg
         self.VERSION = 0x00020003
         self.is_connecting = False
         self.cmd_id = 0
         self.res_cmdset_list = []
         self.evt_cmdset_list = []
-        self.loginfo("robosem connect info: [name: %s][host: %s][port: %s]" % (
-            name, host, str(port)))
+        self.loginfo("robosem connect info: [name: %s][host: %s][port: %s]" % (name, host, str(port)))
 
         # ros
-        self.publishers = {}
-        self.subscribers = {}
-
-        self.init_ros()
+        self._publishers = self.init_subscriber()
+        self._subscribers = self.init_publisher()
 
     def spin(self):
 
         while not rospy.is_shutdown():
             self.connect()
-            self.init_robosem()
+            self.init_robot()
             self.recv()
             self.disconnet()
             rospy.sleep(0.1)
@@ -64,7 +63,7 @@ class RobosemBridge():
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         while not rospy.is_shutdown() and not self.is_connecting:
             try:
-                self.loginfo('try to connect robosem, Please turn on Robosem')
+                self.loginfo('try to connect robot, Please turn on the robot')
                 self.s.connect((self.HOST, self.PORT))
             except Exception, e:
                 self.is_connecting = False
@@ -80,15 +79,7 @@ class RobosemBridge():
         else:
             self.is_connecting = False
 
-    def init_ros(self):
-        self.publishers['TouchSensorEvent'] = rospy.Publisher(
-            'touch_sensor_event', std_msgs.String, latch=False, queue_size=1)
-        self.subscribers['PlayTTS'] = rospy.Subscriber(
-            'play_tts', std_msgs.String, self.play_tts)
-        self.subscribers['RobotMotion'] = rospy.Subscriber(
-            'robot_motion', std_msgs.String, self.robot_motion)
-
-    def init_robosem(self):
+    def init_robot(self):
         if self.is_connecting:
             self.cmd_id += 1
             cmdset = CCmdSet(
@@ -96,7 +87,7 @@ class RobosemBridge():
             self.s.send(cmdset.getCmdSet())
 
     def recv(self):
-        self.loginfo('Start Robosem')
+        self.loginfo('Start Robot')
         while not rospy.is_shutdown() and self.is_connecting:
             try:
                 data = self.s.recv(12)
@@ -177,48 +168,87 @@ class RobosemBridge():
                     button_id = param['value']
                 if param['name'] == 'Status':
                     status = param['value']
-
-            if (button_id is 4 or button_id is 3) and status is 1:
-                if button_id is 4:
-                    button_id = std_msgs.String('right')
-                elif button_id is 3:
-                    button_id = std_msgs.String('left')
-                self.publishers['TouchSensorEvent'].publish(button_id)
+            self.process_touch_event(button_id, status)
 
     def res_proc(self, cmdset):
         pass
 
     def loginfo(self, msg):
-        rospy.loginfo('Robosem Bridge : ' + str(msg))
+        rospy.loginfo('%s : %s'%(rospy.get_name(), str(msg)))
 
     def logwarn(self, msg):
-        rospy.logwarn('Robosem Bridge : ' + str(msg))
+        rospy.logwarn('%s : %s'%(rospy.get_name(), str(msg)))
 
-    def play_tts(self, data):
+    def _play_tts(self, msg):
         if not self.is_connecting:
+            self.logwarn("not connected to robot")
             return
-        print "TTS: %s" % data.data
-        text = data.data
+        text = msg 
         speech_type = 1
         self.cmd_id = self.cmd_id + 1
-        cmdset = CCmdSet(
-            "PlayTTS", "REQUEST_MESSAGE", self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
-
+        cmdset = CCmdSet("PlayTTS", "REQUEST_MESSAGE", self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
         cmdset.setString('Text', text)
-
         cmdset.setInt('SpeechType', speech_type)
         self.s.send(cmdset.getCmdSet())
 
-    def robot_motion(self, data):
+    def _robot_motion(self, motion_name):
         if not self.is_connecting:
+            self.logwarn("not connected to robot")
             return
-        print "Motion: %s" % data.data
-        motion = data.data
+        motion = motion_name 
         self.cmd_id = self.cmd_id + 1
-        cmdset = CCmdSet("RobotMotion", "REQUEST_MESSAGE",
-                         self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
+        cmdset = CCmdSet("RobotMotion", "REQUEST_MESSAGE", self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
         cmdset.setString('MotionName', motion)
         self.s.send(cmdset.getCmdSet())
+
+    def face_expression(self, args):
+        if not self.is_connecting:
+            self.logwarn("not connected to robot")
+            return
+        print "FaceExpression: %d" % args.data
+        self.cmd_id = self.cmd_id + 1
+        cmdset = CCmdSet("ReqExpressFace", "REQUEST_MESSAGE",
+                         self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
+        cmdset.setUInt('FaceType', args.data)
+        self.s.send(cmdset.getCmdSet())
+
+    def easy_move_arm(self, args):
+        if not self.is_connecting:
+            self.logwarn("not connected to robot")
+            return
+        print "EasyMoveArm: %d" % args.data
+        self.cmd_id = self.cmd_id + 1
+        cmdset = CCmdSet("EasyMoveArm", "REQUEST_MESSAGE",
+                         self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
+        cmdset.setUInt('TestCode', args.data)
+        self.s.send(cmdset.getCmdSet())
+
+    def easy_move_head(self, args):
+        if not self.is_connecting:
+            self.logwarn("not connected to robot")
+            return
+        print "EasyMoveHead: %d" % args.data
+        self.cmd_id = self.cmd_id + 1
+        cmdset = CCmdSet("EasyMoveHead", "REQUEST_MESSAGE",
+                         self.NAME, "RBCODE", 0, "", 0, 0, "", self.cmd_id)
+        cmdset.setUInt('TestCode', args.data)
+        self.s.send(cmdset.getCmdSet())
+
+
+    @abc.abstractmethod
+    def init_publisher(self):
+        pass
+
+    @abc.abstractmethod
+    def init_subscriber(self):
+        pass
+
+    @abc.abstractmethod
+    def process_button_event(self, button_id, status):
+        pass
+
+
+
 
     # Sample Function
     # def PlayTTS(self, IsRunning, Return,  Text, SpeechType, SyncFlag = False):
@@ -264,27 +294,3 @@ class RobosemBridge():
     #     print ResultCode
 
 
-##########################################################################
-# Main
-##########################################################################
-
-# main
-def main():
-    rospy.init_node('robosem_bridge')
-
-    robosem_bridge_name = ""
-    robosem_ip = ""
-    robosem_port = ""
-
-    if rospy.has_param('~robosem_bridge_name'):
-        robosem_bridge_name = rospy.get_param(
-            '~robosem_bridge_name', "ROCONBRIDGE")
-    if rospy.has_param('~robosem_ip'):
-        robosem_ip = rospy.get_param('~robosem_ip', "192.168.10.111")
-    if rospy.has_param('~robosem_port'):
-        robosem_port = rospy.get_param('~robosem_port', 6001)
-
-    rb = RobosemBridge(robosem_bridge_name, robosem_ip, robosem_port)
-    rb.spin()
-if __name__ == '__main__':
-    main()

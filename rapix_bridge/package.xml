@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>rapix_bridge</name>
+  <version>0.1.0</version>
+  <description>
+    Bridging between ROS and rapix based robots(e.g robosem, irobi)
+  </description>
+  
+  <maintainer email="dwlee@yujinrobot.com">Dongwook Lee</maintainer>
+  <author>DongWook Lee</author>
+  <license>BSD</license>
+ 
+  <url type="website"></url>
+  <url type="repository">https://github.com/yujinrobot/rapix_bridge</url>
+  <url type="bugtracker">https://github.com/yujinrobot/rapix_bridge/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>python-rospkg</run_depend>
+  <run_depend>rospy</run_depend>
+
+  <export>
+    <rocon_app>rapps/rapix_bridge/rapix_bridge.rapp</rocon_app>
+  </export>
+</package>
